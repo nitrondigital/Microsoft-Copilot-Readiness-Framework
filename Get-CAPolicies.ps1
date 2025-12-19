@@ -12,7 +12,7 @@
     
 .DESCRIPTION
     Analyzes CA policies to ensure:
-    - Appropriate controls for AI-driven tools
+    - Appropriate controls for AI driven tools
     - No blocking configurations for Copilot apps
     - MFA enforcement
     - Device compliance requirements

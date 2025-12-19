@@ -322,7 +322,7 @@ This section provides verified Microsoft documentation URLs for continuous learn
 
 ### Microsoft 365 Copilot Security & Readiness
 
-- **Security for Microsoft 365 Copilot**: https://learn.microsoft.com/en-us/copilot/microsoft-365/microsoft-365-copilot-ai-security
+- **Security for Microsoft 365 Copilot**: https://learn.microsoft.com/en-us/copilot/microsoft-365/microsoft-365-copilot-AI security
 - **Data, Privacy, and Security for Microsoft 365 Copilot**: https://learn.microsoft.com/en-us/copilot/microsoft-365/microsoft-365-copilot-privacy
 - **Microsoft 365 Copilot Adoption and Onboarding Guide**: https://learn.microsoft.com/en-us/copilot/microsoft-365/microsoft-365-copilot-enablement-resources
 - **Microsoft 365 admin center Copilot readiness**: https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/microsoft-365-copilot-readiness
@@ -386,7 +386,7 @@ This section provides verified Microsoft documentation URLs for continuous learn
 - **Microsoft 365 Copilot – Microsoft Adoption**: https://adoption.microsoft.com/en-us/copilot/
 - **Microsoft Copilot Blog**: https://www.microsoft.com/en-us/microsoft-copilot/blog/
 - **Driving Microsoft 365 Copilot adoption with Copilot Champs Community**: https://www.microsoft.com/insidetrack/blog/driving-copilot-for-microsoft-365-adoption-with-our-copilot-champs-community/
-- **Enabling meaningful AI adoption at Microsoft with Microsoft 365 Copilot Expo**: https://www.microsoft.com/insidetrack/blog/enabling-meaningful-ai-adoption-at-microsoft-with-a-microsoft-365-copilot-expo/
+- **Enabling meaningful AI adoption at Microsoft with Microsoft 365 Copilot Expo**: https://www.microsoft.com/insidetrack/blog/enabling-meaningful-AI adoption-at-microsoft-with-a-microsoft-365-copilot-expo/
 
 ---
 
