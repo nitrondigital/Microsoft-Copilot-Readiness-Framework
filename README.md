@@ -19,6 +19,32 @@ This comprehensive framework enables you to conduct professional Microsoft Copil
 
 ---
 
+## New GUI Launcher Workflow
+
+You can now run the assessment through a single PowerShell 7 launcher with one Graph sign-in and a consolidated HTML report.
+
+### Quick Launch
+
+```powershell
+pwsh .\Install-Prerequisites.ps1
+pwsh .\Start-CopilotReadiness.ps1
+```
+
+### GUI Flow
+
+1. Enter your tenant admin URL (`https://<tenant>-admin.sharepoint.com`)
+2. Choose an output folder
+3. Select **Sign In**
+4. Run individual checks or **Run All**
+5. Select **Generate HTML Report** to produce a consolidated report
+
+### GUI Outputs
+
+- Timestamped CSV/TXT files for each selected assessment
+- Consolidated `CopilotReadinessReport_[timestamp].html`
+
+---
+
 ## What's Included
 
 ### 1. Framework Document
@@ -161,10 +187,12 @@ Reviews Conditional Access policies for Copilot compatibility.
 **PowerShell Modules Required:**
 
 ```powershell
-Install-Module -Name Microsoft.Online.SharePoint.PowerShell
-Install-Module -Name PnP.PowerShell
+Install-Module -Name Microsoft.Graph.Authentication
 Install-Module -Name Microsoft.Graph.Identity.SignIns
 Install-Module -Name Microsoft.Graph.Users
+Install-Module -Name Microsoft.Graph.Sites
+Install-Module -Name Microsoft.Graph.Files
+Install-Module -Name Microsoft.Graph.Identity.DirectoryManagement
 ```
 
 **Permissions Needed:**

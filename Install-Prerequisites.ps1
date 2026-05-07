@@ -2,28 +2,43 @@
 # Checks and installs required PowerShell modules for the Copilot Readiness Framework
 # Created by: Nitron Digital LLC
 
-#Requires -Version 5.1
+#Requires -Version 7.0
 
 $requiredModules = @(
     @{
-        Name        = "Microsoft.Online.SharePoint.PowerShell"
-        Description = "SharePoint Online Management Shell (Get-OversharedContent, Get-LabelCoverage, Get-ExternalUserAccess)"
-        MinVersion  = "16.0.0"
-    },
-    @{
-        Name        = "PnP.PowerShell"
-        Description = "PnP PowerShell (Get-OversharedContent, Get-LabelCoverage, Get-ExternalUserAccess)"
+        Name        = "Microsoft.Graph.Authentication"
+        Description = "Microsoft Graph authentication and shared request support"
         MinVersion  = "2.0.0"
     },
     @{
         Name        = "Microsoft.Graph.Identity.SignIns"
-        Description = "Microsoft Graph - Identity & Sign-Ins (Get-CAPolicies)"
+        Description = "Microsoft Graph Identity and sign-ins (Conditional Access analysis)"
         MinVersion  = "2.0.0"
     },
     @{
         Name        = "Microsoft.Graph.Users"
-        Description = "Microsoft Graph - Users (Get-CAPolicies)"
+        Description = "Microsoft Graph users and directory identities"
         MinVersion  = "2.0.0"
+    },
+    @{
+        Name        = "Microsoft.Graph.Sites"
+        Description = "Microsoft Graph sites and SharePoint resources"
+        MinVersion  = "2.0.0"
+    },
+    @{
+        Name        = "Microsoft.Graph.Files"
+        Description = "Microsoft Graph files and drive item permissions"
+        MinVersion  = "2.0.0"
+    },
+    @{
+        Name        = "Microsoft.Graph.Identity.DirectoryManagement"
+        Description = "Microsoft Graph directory management APIs"
+        MinVersion  = "2.0.0"
+    },
+    @{
+        Name        = "ExchangeOnlineManagement"
+        Description = "Exchange Online PowerShell V3 — also provides Security & Compliance (Connect-IPPSSession) for sensitivity label policy data"
+        MinVersion  = "3.0.0"
     }
 )
 
