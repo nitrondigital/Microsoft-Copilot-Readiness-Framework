@@ -14,8 +14,8 @@ function Show-CRGui {
     $form = New-Object System.Windows.Forms.Form
     $form.Text = 'Microsoft Copilot Readiness Assessment'
     $form.StartPosition = 'CenterScreen'
-    $form.Size = New-Object System.Drawing.Size(980, 760)
-    $form.MinimumSize = New-Object System.Drawing.Size(960, 720)
+    $form.Size = New-Object System.Drawing.Size(980, 788)
+    $form.MinimumSize = New-Object System.Drawing.Size(960, 748)
 
     $defaultFont = New-Object System.Drawing.Font('Segoe UI', 9)
     $form.Font = $defaultFont
@@ -72,7 +72,7 @@ function Show-CRGui {
     $grpAssessments = New-Object System.Windows.Forms.GroupBox
     $grpAssessments.Text = 'Assessments'
     $grpAssessments.Location = New-Object System.Drawing.Point(20, 166)
-    $grpAssessments.Size = New-Object System.Drawing.Size(920, 110)
+    $grpAssessments.Size = New-Object System.Drawing.Size(920, 138)
     $form.Controls.Add($grpAssessments)
 
     $chkCA = New-Object System.Windows.Forms.CheckBox
@@ -123,42 +123,49 @@ function Show-CRGui {
     $numSampleSize.Value = 100
     $grpAssessments.Controls.Add($numSampleSize)
 
+    $chkRetention = New-Object System.Windows.Forms.CheckBox
+    $chkRetention.Text = 'Retention Labels & Policies'
+    $chkRetention.Location = New-Object System.Drawing.Point(16, 88)
+    $chkRetention.Size = New-Object System.Drawing.Size(220, 24)
+    $chkRetention.Checked = $true
+    $grpAssessments.Controls.Add($chkRetention)
+
     $btnRunSelected = New-Object System.Windows.Forms.Button
     $btnRunSelected.Text = 'Run Selected'
-    $btnRunSelected.Location = New-Object System.Drawing.Point(20, 290)
+    $btnRunSelected.Location = New-Object System.Drawing.Point(20, 318)
     $btnRunSelected.Size = New-Object System.Drawing.Size(120, 32)
     $btnRunSelected.Enabled = $false
     $form.Controls.Add($btnRunSelected)
 
     $btnRunAll = New-Object System.Windows.Forms.Button
     $btnRunAll.Text = 'Run All'
-    $btnRunAll.Location = New-Object System.Drawing.Point(150, 290)
+    $btnRunAll.Location = New-Object System.Drawing.Point(150, 318)
     $btnRunAll.Size = New-Object System.Drawing.Size(100, 32)
     $btnRunAll.Enabled = $false
     $form.Controls.Add($btnRunAll)
 
     $btnGenerateReport = New-Object System.Windows.Forms.Button
     $btnGenerateReport.Text = 'Generate HTML Report'
-    $btnGenerateReport.Location = New-Object System.Drawing.Point(270, 290)
+    $btnGenerateReport.Location = New-Object System.Drawing.Point(270, 318)
     $btnGenerateReport.Size = New-Object System.Drawing.Size(170, 32)
     $btnGenerateReport.Enabled = $false
     $form.Controls.Add($btnGenerateReport)
 
     $btnOpenReport = New-Object System.Windows.Forms.Button
     $btnOpenReport.Text = 'Open Report'
-    $btnOpenReport.Location = New-Object System.Drawing.Point(450, 290)
+    $btnOpenReport.Location = New-Object System.Drawing.Point(450, 318)
     $btnOpenReport.Size = New-Object System.Drawing.Size(110, 32)
     $btnOpenReport.Enabled = $false
     $form.Controls.Add($btnOpenReport)
 
     $progressBar = New-Object System.Windows.Forms.ProgressBar
-    $progressBar.Location = New-Object System.Drawing.Point(20, 332)
+    $progressBar.Location = New-Object System.Drawing.Point(20, 360)
     $progressBar.Size = New-Object System.Drawing.Size(920, 18)
     $progressBar.Style = 'Blocks'
     $form.Controls.Add($progressBar)
 
     $txtLog = New-Object System.Windows.Forms.TextBox
-    $txtLog.Location = New-Object System.Drawing.Point(20, 358)
+    $txtLog.Location = New-Object System.Drawing.Point(20, 386)
     $txtLog.Size = New-Object System.Drawing.Size(920, 338)
     $txtLog.Multiline = $true
     $txtLog.ScrollBars = 'Vertical'
@@ -196,7 +203,7 @@ function Show-CRGui {
     $updateControlState = {
         $tenantValid = & $isTenantUrlValid $txtTenant.Text
         $isConnected = $script:CRState.Connected -and ($script:CRState.TenantUrl -eq $txtTenant.Text.Trim().TrimEnd('/'))
-        $hasSelection = $chkCA.Checked -or $chkExternal.Checked -or $chkLabels.Checked -or $chkOvershared.Checked
+        $hasSelection = $chkCA.Checked -or $chkExternal.Checked -or $chkLabels.Checked -or $chkOvershared.Checked -or $chkRetention.Checked
 
         $btnSignIn.Enabled = $tenantValid
         $btnDisconnect.Enabled = $isConnected
@@ -263,13 +270,11 @@ function Show-CRGui {
         }
 
         try {
-            # Connect to Graph only from the GUI thread.
-            # Exchange Online and Security & Compliance (Connect-IPPSSession) build remote
-            # PowerShell sessions that block the WinForms STA thread indefinitely — they are
-            # not called here. All four assessment functions use Microsoft Graph exclusively.
-            # Get-CRLabelCoverage will automatically fall back to the Graph beta endpoint
-            # for sensitivity label names when the S&C session is not present.
-            $context = Connect-CRTenant -TenantUrl $txtTenant.Text.Trim() -Service Graph
+            # Connect to Graph and Exchange Online from the GUI thread.
+            # Security & Compliance (Connect-IPPSSession) is intentionally excluded here:
+            # its MSAL localhost OAuth callback deadlocks on the WinForms STA thread.
+            # Get-CRRetentionAssessment handles S&C self-connection in a fresh STA runspace.
+            $context = Connect-CRTenant -TenantUrl $txtTenant.Text.Trim() -Service Graph, ExchangeOnline
             $displayAs = if ([string]::IsNullOrWhiteSpace($context.ConnectedUser)) { $context.TenantId } else { $context.ConnectedUser }
             $lblStatus.Text = "Status: Connected as $displayAs to $($context.OrganizationName)"
         }
@@ -293,12 +298,13 @@ function Show-CRGui {
         if ($chkExternal.Checked) { $selectedAssessments += 'ExternalUserAccess' }
         if ($chkLabels.Checked) { $selectedAssessments += 'LabelCoverage' }
         if ($chkOvershared.Checked) { $selectedAssessments += 'OversharedContent' }
+        if ($chkRetention.Checked) { $selectedAssessments += 'RetentionLabels' }
 
         & $runAssessments $selectedAssessments
     })
 
     $btnRunAll.Add_Click({
-        & $runAssessments @('CAPolicies', 'ExternalUserAccess', 'LabelCoverage', 'OversharedContent')
+        & $runAssessments @('CAPolicies', 'ExternalUserAccess', 'LabelCoverage', 'OversharedContent', 'RetentionLabels')
     })
 
     $btnGenerateReport.Add_Click({
@@ -325,7 +331,7 @@ function Show-CRGui {
         }
     })
 
-    foreach ($control in @($txtTenant, $txtOutput, $chkCA, $chkExternal, $chkLabels, $chkOvershared, $chkIncludeOneDrive)) {
+    foreach ($control in @($txtTenant, $txtOutput, $chkCA, $chkExternal, $chkLabels, $chkOvershared, $chkRetention, $chkIncludeOneDrive)) {
         if ($control -is [System.Windows.Forms.TextBox]) {
             $control.Add_TextChanged({ & $updateControlState })
         }

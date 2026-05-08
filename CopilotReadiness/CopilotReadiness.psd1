@@ -16,6 +16,7 @@
         'Get-CRExternalUserAccess',
         'Get-CRLabelCoverage',
         'Get-CROversharedContent',
+        'Get-CRRetentionAssessment',
         'New-CRReadinessReport',
         'Show-CRGui'
     )

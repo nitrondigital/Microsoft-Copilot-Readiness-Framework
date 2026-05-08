@@ -67,7 +67,8 @@ function New-CRReadinessReport {
         [PSCustomObject]@{ Key = 'CAPolicies'; Name = 'Conditional Access'; Result = $Results['CAPolicies'] },
         [PSCustomObject]@{ Key = 'ExternalUserAccess'; Name = 'External User Access'; Result = $Results['ExternalUserAccess'] },
         [PSCustomObject]@{ Key = 'LabelCoverage'; Name = 'Sensitivity Labels'; Result = $Results['LabelCoverage'] },
-        [PSCustomObject]@{ Key = 'OversharedContent'; Name = 'Overshared Content'; Result = $Results['OversharedContent'] }
+        [PSCustomObject]@{ Key = 'OversharedContent'; Name = 'Overshared Content'; Result = $Results['OversharedContent'] },
+        [PSCustomObject]@{ Key = 'RetentionLabels'; Name = 'Retention Labels'; Result = $Results['RetentionLabels'] }
     )
 
     $cardsBuilder = New-Object System.Text.StringBuilder
@@ -137,6 +138,18 @@ function New-CRReadinessReport {
             Select-Object -First 15 ItemName, SiteUrl, SharedWith, RiskLevel, RiskReason
     }
 
+    $retentionRows = @()
+    if ($null -ne $Results['RetentionLabels'] -and $null -ne (Get-CRSafeProperty $Results['RetentionLabels'] 'Findings')) {
+        $retentionRows = (Get-CRSafeProperty $Results['RetentionLabels'] 'Findings') |
+            Select-Object -First 15 PolicyName, EnabledStatus, WorkloadsCovered, RetentionAction, RetentionDuration
+    }
+
+    $retentionLabelRows = @()
+    if ($null -ne $Results['RetentionLabels'] -and $null -ne (Get-CRSafeProperty $Results['RetentionLabels'] 'LabelInventory')) {
+        $retentionLabelRows = @(Get-CRSafeProperty $Results['RetentionLabels'] 'LabelInventory') |
+            Select-Object -First 50 LabelName, RetentionAction, RetentionDuration, RetentionDurationDisplayHint, IsRecordLabel
+    }
+
     $rawLinksBuilder = New-Object System.Text.StringBuilder
     foreach ($dimension in $dimensions) {
         if ($null -eq $dimension.Result -or $null -eq $dimension.Result.RawCsvPaths) {
@@ -195,6 +208,8 @@ function New-CRReadinessReport {
     $reportHtml = $reportHtml.Replace('{{EXTERNAL_FINDINGS_ROWS}}', (& $toRows $externalRows @('ExternalUserEmail', 'SiteUrl', 'Permissions', 'RiskLevel')))
     $reportHtml = $reportHtml.Replace('{{LABEL_FINDINGS_ROWS}}', (& $toRows $labelRows @('FileName', 'SiteUrl', 'SensitiveIndicators')))
     $reportHtml = $reportHtml.Replace('{{OVERSHARED_FINDINGS_ROWS}}', (& $toRows $oversharedRows @('ItemName', 'SiteUrl', 'SharedWith', 'RiskLevel', 'RiskReason')))
+    $reportHtml = $reportHtml.Replace('{{RETENTION_LABEL_ROWS}}', (& $toRows $retentionLabelRows @('LabelName', 'RetentionAction', 'RetentionDuration', 'RetentionDurationDisplayHint', 'IsRecordLabel')))
+    $reportHtml = $reportHtml.Replace('{{RETENTION_FINDINGS_ROWS}}', (& $toRows $retentionRows @('PolicyName', 'EnabledStatus', 'WorkloadsCovered', 'RetentionAction', 'RetentionDuration')))
     $reportHtml = $reportHtml.Replace('{{RAW_FILE_LINKS_HTML}}', $rawLinksHtml)
     $reportHtml = $reportHtml.Replace('{{RADAR_LABELS_JSON}}', (ConvertTo-Json -InputObject $radarLabels -Compress))
     $reportHtml = $reportHtml.Replace('{{RADAR_DATA_JSON}}', (ConvertTo-Json -InputObject $radarData -Compress))

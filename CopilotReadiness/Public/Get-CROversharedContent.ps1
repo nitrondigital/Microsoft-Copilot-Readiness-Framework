@@ -139,11 +139,13 @@ function Get-CROversharedContent {
                     }
 
                     $principalSet = @()
-                    if ($null -ne $permission.grantedToV2) {
-                        $principalSet += $permission.grantedToV2
+                    $grantedToV2 = Get-CRSafeProperty $permission 'grantedToV2'
+                    if ($null -ne $grantedToV2) {
+                        $principalSet += $grantedToV2
                     }
-                    if ($null -ne $permission.grantedToIdentitiesV2) {
-                        $principalSet += @($permission.grantedToIdentitiesV2)
+                    $grantedToIdentitiesV2 = Get-CRSafeProperty $permission 'grantedToIdentitiesV2'
+                    if ($null -ne $grantedToIdentitiesV2) {
+                        $principalSet += @($grantedToIdentitiesV2)
                     }
 
                     foreach ($principal in $principalSet) {
@@ -152,8 +154,13 @@ function Get-CROversharedContent {
                         $sharedWith = 'Unknown'
                         $memberType = 'Unknown'
 
-                        if ($null -ne $principal.siteGroup) {
-                            $sharedWith = $principal.siteGroup.displayName
+                        $pSiteGroup = Get-CRSafeProperty $principal 'siteGroup'
+                        $pGroup     = Get-CRSafeProperty $principal 'group'
+                        $pUser      = Get-CRSafeProperty $principal 'user'
+                        $pSiteUser  = Get-CRSafeProperty $principal 'siteUser'
+
+                        if ($null -ne $pSiteGroup) {
+                            $sharedWith = [string](Get-CRSafeProperty $pSiteGroup 'displayName')
                             $memberType = 'SiteGroup'
 
                             if ($sharedWith -like '*Everyone except external users*') {
@@ -165,22 +172,26 @@ function Get-CROversharedContent {
                                 $riskReason = 'Shared with Everyone group'
                             }
                         }
-                        elseif ($null -ne $principal.group) {
-                            $sharedWith = $principal.group.displayName
+                        elseif ($null -ne $pGroup) {
+                            $sharedWith = [string](Get-CRSafeProperty $pGroup 'displayName')
                             $memberType = 'SecurityGroup'
 
-                            $groupCount = & $getGroupMemberCount $principal.group.id
+                            $groupCount = & $getGroupMemberCount ([string](Get-CRSafeProperty $pGroup 'id'))
                             if ($groupCount -gt 500) {
                                 $riskLevel = 'Medium'
                                 $riskReason = "Shared with large security group ($groupCount members)"
                             }
                         }
-                        elseif ($null -ne $principal.user) {
-                            $sharedWith = if ([string]::IsNullOrWhiteSpace($principal.user.email)) { $principal.user.displayName } else { $principal.user.email }
-                            $memberType = 'User'
+                        elseif ($null -ne $pUser) {
+                            $userEmail   = [string](Get-CRSafeProperty $pUser 'email')
+                            $userDisplay = [string](Get-CRSafeProperty $pUser 'displayName')
+                            $sharedWith  = if ([string]::IsNullOrWhiteSpace($userEmail)) { $userDisplay } else { $userEmail }
+                            $memberType  = 'User'
                         }
-                        elseif ($null -ne $principal.siteUser) {
-                            $sharedWith = if ([string]::IsNullOrWhiteSpace($principal.siteUser.email)) { $principal.siteUser.displayName } else { $principal.siteUser.email }
+                        elseif ($null -ne $pSiteUser) {
+                            $suEmail   = [string](Get-CRSafeProperty $pSiteUser 'email')
+                            $suDisplay = [string](Get-CRSafeProperty $pSiteUser 'displayName')
+                            $sharedWith = if ([string]::IsNullOrWhiteSpace($suEmail)) { $suDisplay } else { $suEmail }
                             $memberType = 'SiteUser'
                         }
 

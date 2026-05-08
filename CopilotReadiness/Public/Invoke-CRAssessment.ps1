@@ -1,8 +1,8 @@
 function Invoke-CRAssessment {
     [CmdletBinding()]
     param(
-        [ValidateSet('CAPolicies', 'ExternalUserAccess', 'LabelCoverage', 'OversharedContent')]
-        [string[]]$Assessments = @('CAPolicies', 'ExternalUserAccess', 'LabelCoverage', 'OversharedContent'),
+        [ValidateSet('CAPolicies', 'ExternalUserAccess', 'LabelCoverage', 'OversharedContent', 'RetentionLabels')]
+        [string[]]$Assessments = @('CAPolicies', 'ExternalUserAccess', 'LabelCoverage', 'OversharedContent', 'RetentionLabels'),
 
         [Parameter(Mandatory)]
         [string]$TenantUrl,
@@ -47,6 +47,9 @@ function Invoke-CRAssessment {
                 }
                 'OversharedContent' {
                     $results[$assessment] = Get-CROversharedContent -OutputPath $OutputPath -IncludeOneDrive:$IncludeOneDrive -SampleSize $SampleSize
+                }
+                'RetentionLabels' {
+                    $results[$assessment] = Get-CRRetentionAssessment -OutputPath $OutputPath
                 }
             }
 
